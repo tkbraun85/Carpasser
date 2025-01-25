@@ -1,0 +1,24 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1">
+  <DUT Name="TRACK" Id="{d8787df0-78f8-4b2a-8c78-8e0d3c65219c}">
+    <Declaration><![CDATA[TYPE TRACK:
+STRUCT
+	red_left: REAL := 0.426085;
+	red_right: REAL:= 35.377296;
+	red_middle: REAL:= 17.887;
+	blue_left: REAL:= 7.244;
+	blue_right: REAL:= 42.17;
+	blue_middle: REAL:=24.681;
+	sel_val: SINT := 0;
+	target: REAL;
+	redSelect: BOOL;
+	blueSelect:BOOL;
+	leftSelect:BOOL;
+	rightSelect: BOOL;
+	
+END_STRUCT
+END_TYPE
+
+]]></Declaration>
+  </DUT>
+</TcPlcObject>

@@ -1,0 +1,44 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1">
+  <POU Name="PID_CTL" Id="{ae735e4c-812a-4088-874c-8fc2aac0f396}" SpecialFunc="None">
+    <Declaration><![CDATA[FUNCTION_BLOCK PID_CTL
+VAR_INPUT
+	enable: BOOL;
+	setpoint: BOOL;
+	pv: LREAL;
+	bHold: BOOL;
+END_VAR
+VAR_OUTPUT
+	output: LREAL;
+END_VAR
+VAR
+	velPID : FB_CTRL_PID;
+	velPIDParams: ST_CTRL_PID_PARAMS;
+	velPIDctlMode: E_CTRL_MODE;
+END_VAR
+]]></Declaration>
+    <Implementation>
+      <ST><![CDATA[
+
+
+
+//PID PARAMS
+velPIDParams.tCtrlCycleTime          := simTime;
+velPIDParams.tTaskCycleTime      := simTime;
+velPIDParams.fKp                := 1.0; 
+velPIDParams.tTn                := T#100MS; 
+velPIDParams.tTv                := T#0MS; 
+velPIDParams.tTd                 := T#0MS; 
+velPIDParams.fOutMaxLimit        := 1E38; 
+velPIDParams.fOutMinLimit        := -1E38; 
+velPIDParams.bPInTheFeedbackPath :=FALSE;
+velPIDParams.bDInTheFeedbackPath := FALSE;
+velPIDParams.bARWOnIPartOnly      := FALSE;
+
+velPID.stParams := velPIDParams;
+
+velPID.fSetpointValue := valve.velSetpoint;
+velPID.fActualValue := carSim.car.vel;]]></ST>
+    </Implementation>
+  </POU>
+</TcPlcObject>

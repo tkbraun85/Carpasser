@@ -1,0 +1,27 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1">
+  <GVL Name="GVL" Id="{4a8c0d3f-64ab-4917-b4d3-b3aab5411599}">
+    <Declaration><![CDATA[
+{attribute 'OPC.UA.DA Variable'}
+VAR_GLOBAL
+	(*
+    vel            : REAL := 0;
+    acc            : REAL := 0;
+    pos            : REAL := 0;
+    accelLoad      : REAL := 0;
+    velPrev        : REAL := 0;
+    accPrev        : REAL := 0;
+    posPrev        : REAL := 0;
+    
+    valvePercFilt  : REAL := 0;
+    valveFlowEst   : REAL := 0;
+	*)
+		
+	{attribute 'OPC.UA.DA' := '1'}
+	simTime: TIME:= T#50MS;
+	{attribute 'OPC.UA.DA' := '1'}
+	simEnbl: BOOL;
+	
+END_VAR;]]></Declaration>
+  </GVL>
+</TcPlcObject>

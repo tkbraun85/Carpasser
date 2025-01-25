@@ -1,0 +1,16 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1">
+  <DUT Name="BOXCAR" Id="{903b4816-ae89-40d5-8573-3632da433666}">
+    <Declaration><![CDATA[TYPE BOXCAR :
+STRUCT
+	pX : REAL;
+	pY : REAL;
+	currentTrack : SINT;
+	queueNum : DINT;
+	carNum : SINT;
+	
+END_STRUCT
+END_TYPE
+]]></Declaration>
+  </DUT>
+</TcPlcObject>

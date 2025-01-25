@@ -1,0 +1,44 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1">
+  <POU Name="RATE_LIMIT" Id="{25a97c1d-1fa1-43d7-87ca-6db185f467c2}" SpecialFunc="None">
+    <Declaration><![CDATA[FUNCTION_BLOCK RATE_LIMIT
+VAR_INPUT
+	targetVal: REAL;
+	currentVal: REAL;
+	cycleTime: TIME;
+	rateLimit: REAL :=5;
+END_VAR
+VAR_OUTPUT
+	nextVal: REAL;
+END_VAR
+VAR
+	pct: REAL;
+	oneSecond: TIME := T#1S;
+	splitSecond: REAL;
+END_VAR
+]]></Declaration>
+    <Implementation>
+      <ST><![CDATA[
+
+pct := 1 + rateLimit/100.0;
+splitSecond := TO_REAL(T#1S) / TO_REAL(cycleTime);
+
+
+IF ABS(targetVal - currentVal) < 1 THEN
+	nextVal :=targetVal;
+
+ELSE
+
+	IF targetVal > currentVal THEN
+		
+		nextVal := MIN(currentVal + pct, currentVal + targetVal*(targetVal - currentVal));
+	END_IF
+	
+	IF targetVal < currentVal THEN
+		nextVal := MAX(currentVal - pct, currentVal - ABS(targetVal*(targetVal-currentVal)));
+	END_IF
+
+END_IF]]></ST>
+    </Implementation>
+  </POU>
+</TcPlcObject>

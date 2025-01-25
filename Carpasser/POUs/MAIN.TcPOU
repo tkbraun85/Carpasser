@@ -1,0 +1,162 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1">
+  <POU Name="MAIN" Id="{e5513770-3ab6-4148-86ae-d552e1b729d5}" SpecialFunc="None">
+    <Declaration><![CDATA[PROGRAM MAIN
+VAR	
+		nCounter : DINT;
+		
+		{attribute 'OPC.UA.DA' := '1'}
+   		myOPCTag1 : INT;
+		
+		{attribute 'OPC.UA.DA' := '1'}  	
+    	myOPCTag2 : BOOL; 
+		nTimer1	: TON;  
+		nTimer2 : TON;
+		startTimer: BOOL;
+		{attribute 'OPC.UA.DA' := '1'}
+		oneSecond : BOOL;
+		{attribute 'OPC.UA.DA' := '1'}
+		carState : CarPasser; 
+		{attribute 'OPC.UA.DA' := '1'}
+		valvePos : REAL :=0;
+		carSim : CARSIM;
+		scanTimer: TON;
+		scanONS: R_TRIG;
+		ONS: ARRAY[1..10] OF R_TRIG;
+		valvePosRL: REAL;
+		
+{attribute 'OPC.UA.DA' := '1'}
+		initCar: BOOL :=FALSE;
+		{attribute 'OPC.UA.DA' := '1'}
+		valve: VALVE;
+		{attribute 'OPC.UA.DA' := '1'}
+		track: TRACK;
+		arrRedPositions  : ARRAY[0..3] OF REAL := [0, track.red_left, track.red_right, track.red_middle];
+    	arrBluePositions : ARRAY[0..3] OF REAL := [0, track.blue_left, track.blue_right, track.blue_middle];
+		//velPID : FB_CTRL_PI_PID;
+	
+	
+	
+	{attribute 'OPC.UA.DA' := '1'}
+	manOverride : BOOL;
+	
+	rate_limit: RATE_LIMIT;
+	
+	fAngleDeg : REAL := 45.0; 
+    fAngleRad : REAL;
+    fSine     : REAL;
+	
+	CLK: BOOL;
+	testInt: REAL;
+	testReal: REAL;
+	red_left: INT;
+	blue_middle: INT;
+	trackredSelect: BOOL;
+	test: REAL;
+	
+	velPID : FB_CTRL_PID;
+	velPIDParams: ST_CTRL_PID_PARAMS;
+	velPIDctlMode: E_CTRL_MODE;
+END_VAR
+	
+
+]]></Declaration>
+    <Implementation>
+      <ST><![CDATA[
+startTimer := TRUE;
+nTimer1(IN := startTimer, PT := T#1S);
+
+IF nTimer1.Q THEN
+	oneSecond:= NOT oneSecond;
+	nTimer1(IN := FALSE);
+	myOPCTag1 := myOPCTag1 + 1;
+END_IF
+
+
+
+scanTimer(IN := simEnbl, PT := simTime);
+scanONS(CLK := scanTimer.Q);
+
+//valvePos := 0; //100*SIN(fAngleDeg*(3.14159/180));
+
+
+(* SELECT CAR POSITIONS 0-NONE,1-RL, 2-RR,3-RM,4-BL, 5-BR, 6-BM *)
+ONS[1](CLK := track.redSelect);
+ONS[2](CLK := track.blueSelect);
+
+IF ONS[1].Q THEN
+	track.blueSelect := 0;
+END_IF
+
+IF ONS[2].Q THEN
+	track.redSelect := 0;
+END_IF
+
+//Assign target position based on selection
+IF track.blueSelect = TRUE AND track.redSelect = FALSE THEN
+	//1 - left, 2 - right, 3 - middle
+	valve.targetPos := arrBluePositions[track.sel_val];
+END_IF
+
+IF track.blueSelect = FALSE AND track.redSelect = TRUE THEN
+	//1 - left, 2 - right, 3 - middle
+	valve.targetPos := arrRedPositions[track.sel_val];
+END_IF
+
+
+
+
+
+
+
+
+
+
+//Main Simulation and Control Loop
+IF  scanONS.Q THEN	
+	
+	
+
+	rate_limit(targetVal:=valve.velSetpoint, currentVal:= valvePosRL, cycleTime:=simTime);
+	valvePosRL := rate_limit.nextVal;
+	valvePos:= valvePosRL;
+	//Set Valve direction
+	(*
+	IF valve.movRight THEN
+	valvePos := velPID.fOut;
+	END_IF
+	
+	IF valve.movLeft THEN
+		valvePos := -velPID.fOut;
+	END_IF
+	*)
+	
+	
+	//Calc Dist To Target
+	valve.distanceToTarget := ABS(carSim.car.pos - valve.targetPos);
+	
+	IF (carSim.car.pos - valve.targetPos) < 0 THEN
+
+		valve.movRight := 1;
+		valve.movLeft := 0;
+
+	ELSE
+		valve.movLeft := 0;
+		valve.movRight := 1; 
+	
+	END_IF
+	
+	
+	carSim(valvePosition := valvePos, carWt := 10000, init := initCar);
+	carState := carSIm.car;
+	scanTimer(IN:= FALSE);
+	initCar := FALSE;
+
+END_IF
+
+
+
+]]></ST>
+    </Implementation>
+  </POU>
+</TcPlcObject>

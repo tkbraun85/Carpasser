@@ -1,0 +1,51 @@
+<?xml version="1.0"?>
+<TcLicenseInfo xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="http://www.beckhoff.com/schemas/2011/11/TcLicenseInfo">
+	<LicenseInfo>
+		<SystemId>{A417544C-0335-AF95-DF5B-1905FC12380D}</SystemId>
+		<IssueTime>2025-01-25T02:00:00</IssueTime>
+		<ExpireTime>2025-02-02T00:00:00</ExpireTime>
+		<LicenseKey>be3d456903a3382bf7b9fba25734420141ceb62238b14186e9ecd432ed43c96f0778edef1ef546f410afa349c0583dbcf50f23332e72ec8c7f27aad49656bbc938218cced731a62b62abb17c552bc29a46ac4eb81bc4026df81ca2e5d06bdf8c3476b012b1c86d0303e363ae179da93320aae25b61c81d478b21018778eb1ba886aafe10ecf1a9ce0f365d515d08ce5073cd30b361c18e87d8787506fb1b7947a2d13e1df69ccfb4b19a35d5395b7e98fe8194104624f3f0950b896c6e3e9691a1771244c41a10f83424e0fb94bf25f4f7da196b9b4ac1b0122b0db4a8a1de2d8f761fdeadf1224fef32d548fc7b419e79f9f9b570debcebecde5e9912b350cf</LicenseKey>
+		<License>
+			<LicenseId>{4C256767-E6E6-4AF5-BD68-9F7ABAD0C200}</LicenseId>
+			<Name>TC3 ADS</Name>
+			<OrderNo>TC1000</OrderNo>
+		</License>
+		<License>
+			<LicenseId>{3FF18E97-7754-401B-93FB-70544DE28A13}</LicenseId>
+			<Name>TC3 IO</Name>
+			<OrderNo>TC1100</OrderNo>
+		</License>
+		<License>
+			<LicenseId>{66689887-CCBD-452C-AC9A-039D997C6E66}</LicenseId>
+			<Name>TC3 PLC</Name>
+			<OrderNo>TC1200</OrderNo>
+		</License>
+		<License>
+			<LicenseId>{CC0BCBD5-3EA7-D7D4-4C71-A8B125F0DB72}</LicenseId>
+			<Name>TC3 OPC-UA Analytics Read</Name>
+		</License>
+		<License>
+			<LicenseId>{C2B7B285-EBD7-72CF-843F-15F95A86FEEE}</LicenseId>
+			<Name>TC3 OPC-UA Analytics Write</Name>
+		</License>
+		<License>
+			<LicenseId>{BDCC0070-42D5-49AE-ABF1-1D4434813D60}</LicenseId>
+			<Name>TC3 OPC-UA</Name>
+			<OrderNo>TF6100</OrderNo>
+		</License>
+		<License>
+			<LicenseId>{777F1598-583B-4503-99BB-7C02E0ABD97E}</LicenseId>
+			<Name>TC3 Controller Toolbox</Name>
+			<OrderNo>TF4100</OrderNo>
+		</License>
+		<License>
+			<LicenseId>{B6EAE583-6F5A-60C2-D176-3830729B4E9A}</LicenseId>
+			<Name>TC3 OPC UA Pub/Sub MQTT Client</Name>
+		</License>
+		<License>
+			<LicenseId>{67B4BA05-C1F2-4184-AE5F-4BAB0FFB09E1}</LicenseId>
+			<Name>TC3 OPC UA Pub/Sub</Name>
+			<OrderNo>TF6105</OrderNo>
+		</License>
+	</LicenseInfo>
+</TcLicenseInfo>

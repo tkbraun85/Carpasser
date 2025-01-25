@@ -1,0 +1,24 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1">
+  <DUT Name="VALVE" Id="{27966e24-a4fd-4cf0-bf0d-d552f9967190}">
+    <Declaration><![CDATA[TYPE VALVE :
+STRUCT
+	jogLeftCmd : BOOL;
+	jogRightCmd: BOOL;
+	jogValvePos: REAL;
+	maxValveMoveRate: REAL;
+	velSetpoint: REAL;
+	accSetpoint: REAL;
+	targetPos: REAL;
+	distanceToTarget: REAL;
+	moveEnable: BOOL;
+	movRight: BOOL;
+	movLeft: BOOL;
+	autoEnble: BOOL;
+	jobEnble: BOOL;
+	test: REAL;
+END_STRUCT
+END_TYPE
+]]></Declaration>
+  </DUT>
+</TcPlcObject>
