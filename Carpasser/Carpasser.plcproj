@@ -25,7 +25,7 @@
     <ProjectVersion>0</ProjectVersion>
   </PropertyGroup>
   <ItemGroup>
-    <Compile Include="DUTs\BOXCAR.TcDUT">
+    <Compile Include="DUTs\CAR.TcDUT">
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="DUTs\TRACK.TcDUT">
@@ -44,6 +44,9 @@
     <Compile Include="POUs\CarPasser.TcDUT">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="POUs\FB_CTL.TcPOU">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Include="POUs\GVL.TcGVL">
       <SubType>Code</SubType>
       <LinkAlways>true</LinkAlways>
@@ -55,6 +58,9 @@
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="POUs\PID_CTL.TcPOU">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="POUs\PRG_FB_CTRL_PID.TcPOU">
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="POUs\RATE_LIMIT.TcPOU">

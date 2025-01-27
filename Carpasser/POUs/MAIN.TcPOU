@@ -12,6 +12,7 @@ VAR
     	myOPCTag2 : BOOL; 
 		nTimer1	: TON;  
 		nTimer2 : TON;
+		nTimer3 : TON;
 		startTimer: BOOL;
 		{attribute 'OPC.UA.DA' := '1'}
 		oneSecond : BOOL;
@@ -24,6 +25,8 @@ VAR
 		scanONS: R_TRIG;
 		ONS: ARRAY[1..10] OF R_TRIG;
 		valvePosRL: REAL;
+		{attribute 'OPC.UA.DA' := '1'}
+		cars: ARRAY[1..10] OF CAR;
 		
 {attribute 'OPC.UA.DA' := '1'}
 		initCar: BOOL :=FALSE;
@@ -40,7 +43,12 @@ VAR
 	{attribute 'OPC.UA.DA' := '1'}
 	manOverride : BOOL;
 	
+	
+	{attribute 'OPC.UA.DA' := '1'}
+	carSeq: INT;
+	
 	rate_limit: RATE_LIMIT;
+	valve_rate_limit: RATE_LIMIT;
 	
 	fAngleDeg : REAL := 45.0; 
     fAngleRad : REAL;
@@ -54,17 +62,35 @@ VAR
 	trackredSelect: BOOL;
 	test: REAL;
 	
+	fbCTRL: FB_CTL;
+	{attribute 'OPC.UA.DA' := '1'}	
+	velPID: PID_CTL;
+
+	(*
 	velPID : FB_CTRL_PID;
 	velPIDParams: ST_CTRL_PID_PARAMS;
 	velPIDctlMode: E_CTRL_MODE;
+	*)
+	{attribute 'OPC.UA.DA' := '1'}	
+	velSPrateLimit: REAL;
+	valveOut: REAL;
+	cnt: INT;
+	start: REAL;
+	cntEnbl: BOOL;
+	end: REAL;
+	{attribute 'OPC.UA.DA' := '1'}
+	moveCMDdelay: BOOL;
 END_VAR
 	
 
-]]></Declaration>
+
+VAR_INPUT
+	
+END_VAR]]></Declaration>
     <Implementation>
       <ST><![CDATA[
 startTimer := TRUE;
-nTimer1(IN := startTimer, PT := T#1S);
+nTimer1(IN := startTimer, PT := T#250MS);
 
 IF nTimer1.Q THEN
 	oneSecond:= NOT oneSecond;
@@ -96,16 +122,49 @@ END_IF
 IF track.blueSelect = TRUE AND track.redSelect = FALSE THEN
 	//1 - left, 2 - right, 3 - middle
 	valve.targetPos := arrBluePositions[track.sel_val];
-END_IF
-
-IF track.blueSelect = FALSE AND track.redSelect = TRUE THEN
+ELSIF track.blueSelect = FALSE AND track.redSelect = TRUE THEN
 	//1 - left, 2 - right, 3 - middle
 	valve.targetPos := arrRedPositions[track.sel_val];
+
+ELSE
+	valve.targetPos := carSim.car.pos;
 END_IF
 
 
 
+CASE carSeq OF
+	
+	0: //OFFLINE
+		valvePos := 0;
+		IF valve.moveCmd THEN
+			carSeq := 1;
+			moveCMDdelay := 1;
+		END_IF
+	
+	1: // Full Speed Untill 2.5 ft to approach
+		IF valve.distanceToTarget >=3.5 THEN
+			valvePos := valve.positionSetPointAuto;
+		
+		ELSIF	valve.distanceToTarget<=3.5 THEN 
+			valvePos := 10;
+			carSeq := 2;
+		END_IF
+	2: // Inch Mode
+		IF valve.distanceToTarget < 0.05 THEN
+			carSeq := 0;
+			valvePos :=0;
+			valve.moveCmd:=0;
+		END_IF
+	
+	ELSE
+		valvePos:=0;
+	
+END_CASE
 
+nTimer3(IN := (valve.moveCmd = 0), PT := T#20S);
+IF nTimer3.Q THEN
+	moveCMDdelay := 0;
+END_IF
 
 
 
@@ -115,42 +174,76 @@ END_IF
 //Main Simulation and Control Loop
 IF  scanONS.Q THEN	
 	
+	//fbCTRL(pv:=carSIM.car.vel, setPoint:=velSPrateLimit, enable:=TRUE);
+	
 	
 
-	rate_limit(targetVal:=valve.velSetpoint, currentVal:= valvePosRL, cycleTime:=simTime);
-	valvePosRL := rate_limit.nextVal;
-	valvePos:= valvePosRL;
-	//Set Valve direction
-	(*
-	IF valve.movRight THEN
-	valvePos := velPID.fOut;
+	//rate_limit(targetVal:=valve.velSetpoint, currentVal:= velSPrateLimit, cycleTime:=simTime, rateLimit := valve.rateLimit);
+	//velSPrateLimit := rate_limit.nextVal;
+
+	valve_rate_limit(targetVal:=valvePos, currentVal:= velSPrateLimit, cycleTime:=simTime, rateLimit := valve.rateLimit);
+	velSPrateLimit := valve_rate_limit.nextVal;
+
+	
+	ONS[4](CLK := (valveOut = valve.positionSetPointAuto));
+	ONS[5](CLK := (valveOut = 0));
+	IF ONS[4].Q THEN
+		cntEnbl := TRUE;
+		start := carsim.car.pos;
 	END_IF
 	
-	IF valve.movLeft THEN
-		valvePos := -velPID.fOut;
+	IF ONS[5].Q THEN
+		cntEnbl :=FALSE;
+		end := carsim.car.pos;
 	END_IF
+	
+	IF cntEnbl THEN
+		cnt := cnt + 1;
+	END_IF
+
+	(*
+	velPID.pv := ABS(carSim.car.vel);
+	velPID.setpoint := velSPrateLimit;	
+	velPID.enable := valve.autoEnble;
 	*)
+	
+	IF valve.movRight THEN
+		valveOut := velSPrateLimit;//fbCTRL.output;
+	ELSE
+		valveOut := -velSPrateLimit; //-fbCTRL.output;
+	END_IF
+
 	
 	
 	//Calc Dist To Target
 	valve.distanceToTarget := ABS(carSim.car.pos - valve.targetPos);
 	
-	IF (carSim.car.pos - valve.targetPos) < 0 THEN
+	IF (carSim.car.pos - valve.targetPos) > 0 THEN
 
-		valve.movRight := 1;
-		valve.movLeft := 0;
+		valve.movRight := 0;
+		valve.movLeft := 1;
 
-	ELSE
+	ELSIF (carSim.car.pos - valve.targetPos) < 0 THEN
 		valve.movLeft := 0;
 		valve.movRight := 1; 
+		
+	ELSE
+		IF carSIM.car.pos <0.5 THEN
+			valve.movLeft := 0;
+			valve.movRight := 1;
+		ELSIF carSIM.car.pos > 43 THEN
+			valve.movLeft := 1;
+			valve.movRight := 0;
+			
+		END_IF
 	
 	END_IF
 	
 	
-	carSim(valvePosition := valvePos, carWt := 10000, init := initCar);
+	carSim(valvePosition := valveOut, carWt := 10000, init := initCar);
 	carState := carSIm.car;
 	scanTimer(IN:= FALSE);
-	initCar := FALSE;
+	//initCar := FALSE;
 
 END_IF
 

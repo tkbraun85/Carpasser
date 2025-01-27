@@ -20,9 +20,9 @@ END_VAR
     <Implementation>
       <ST><![CDATA[
 
-pct := 1 + rateLimit/100.0;
-splitSecond := TO_REAL(T#1S) / TO_REAL(cycleTime);
 
+splitSecond := TO_REAL(T#1S) / TO_REAL(cycleTime);
+pct := (rateLimit/100.0)/splitSecond;
 
 IF ABS(targetVal - currentVal) < 1 THEN
 	nextVal :=targetVal;
@@ -31,11 +31,11 @@ ELSE
 
 	IF targetVal > currentVal THEN
 		
-		nextVal := MIN(currentVal + pct, currentVal + targetVal*(targetVal - currentVal));
+		nextVal := MIN(currentVal+pct, currentVal + 0.1*(targetVal - currentVal));
 	END_IF
 	
 	IF targetVal < currentVal THEN
-		nextVal := MAX(currentVal - pct, currentVal - ABS(targetVal*(targetVal-currentVal)));
+		nextVal := MAX(currentVal-pct, currentVal - ABS(0.1*(targetVal-currentVal)));
 	END_IF
 
 END_IF]]></ST>

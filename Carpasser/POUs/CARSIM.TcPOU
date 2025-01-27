@@ -55,8 +55,16 @@ IF valvePosition < 0 THEN
 END_IF
 
 car.vel :=  0.0084*car.valveFlowEst;
-car.acc := (car.vel - car.velPrev)/scanTime;
-car.pos := car.posPrev + car.vel*scanTime; 
+
+IF car.vel > 0.025 THEN
+	car.acc := MIN(2.5,ABS(car.vel - car.velPrev)/0.050);	
+ELSE
+	car.acc := 0;
+END_IF
+
+
+//car.acc := (car.vel - car.velPrev)/0.050;
+car.pos := car.posPrev + car.vel*0.05; 
 car.accelLoad := carRollResist*car.carWeight/2000 + car.carWeight/32.2*car.acc;
 car.power := car.accelLoad*60/33000;	
 

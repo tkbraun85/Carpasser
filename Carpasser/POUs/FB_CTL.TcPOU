@@ -1,0 +1,98 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1">
+  <POU Name="FB_CTL" Id="{3f83940e-1d5b-4c8e-84ba-fe6d8ddd29ea}" SpecialFunc="None">
+    <Declaration><![CDATA[FUNCTION_BLOCK FB_CTL
+VAR_INPUT
+	setPoint: LREAL:=0;
+	pv: LREAL;
+	enable: BOOL;
+	init: BOOL;
+	
+END_VAR
+VAR_OUTPUT
+	output: LREAL;
+END_VAR
+VAR
+
+	fSetpointValue					: LREAL		:= 5.0;
+	fActualValue					: LREAL;
+	fManSyncValue					: LREAL;
+	bSync							: BOOL;
+
+	fOut							: LREAL;
+	bHold							: BOOL;
+
+	eMode							: E_CTRL_MODE;
+	stCTRL_PID_PARAMS				: ST_CTRL_PID_PARAMS;
+
+	eErrorId						: E_CTRL_ERRORCODES;
+	bError							: BOOL;
+	bARWactive						: BOOL;
+
+	(* controller *)
+	fbCTRL_PID						: FB_CTRL_PID;
+
+	bInit							: BOOL	:= TRUE;
+	fbTON							: TON;
+END_VAR]]></Declaration>
+    <Implementation>
+      <ST><![CDATA[
+
+IF bInit THEN
+	(* init parameter struct *)
+	stCTRL_PID_PARAMS.tCtrlCycleTime		:= simTime;
+	stCTRL_PID_PARAMS.tTaskCycleTime		:= simTime;
+	stCTRL_PID_PARAMS.fKp					:= 2.0;			(* proportional gain Kp				*)
+	stCTRL_PID_PARAMS.tTn					:= T#20S;		(*  Tn								*)
+	stCTRL_PID_PARAMS.tTv					:= T#0S;		(*  Tv								*)
+	stCTRL_PID_PARAMS.tTd					:= T#0S;		(*  Td								*)
+	stCTRL_PID_PARAMS.fOutMaxLimit			:=  100;			(* maximum output limit				*)
+	stCTRL_PID_PARAMS.fOutMinLimit			:= 0;			(* minimum output limit				*)
+
+	(* set the mode to ACTIVE --> normal operation *)
+	eMode := eCTRL_MODE_ACTIVE;
+
+	(* reset the init flag *)
+	bInit := FALSE;
+END_IF
+
+
+(* generate input signal 
+fbTON( IN:= TRUE,
+		PT:= T#6S);
+		
+IF fbTON.Q THEN
+	fbTON( IN:= FALSE);
+	fSetpointValue := -1.0 * fSetpointValue;
+END_IF
+*)
+
+fSetpointValue:=setPoint*100.0;
+fActualValue:= ABS(pv)*100.0;
+output:= fOut;
+
+(* copy var to scope var *)
+fSetpointValueToScope 	:= fSetpointValue*100;
+fActualValueToScope 	:= fActualValue;
+
+
+(* call controller *)
+fbCTRL_PID(		fSetpointValue		:= fSetpointValue,
+				fActualValue		:= fActualValue,
+				fManSyncValue		:= fManSyncValue,
+				bSync				:= bSync,
+				eMode				:= eMode,
+				bHold				:= bHold,
+				stParams			:= stCTRL_PID_PARAMS,
+				fOut				=> fOut,
+				bARWactive			=> bARWactive,
+				eErrorId			=> eErrorId,
+				bError				=> bError
+				);
+
+
+(* copy var to scope var *)
+fOutToScope := fOut;]]></ST>
+    </Implementation>
+  </POU>
+</TcPlcObject>

@@ -17,6 +17,11 @@ STRUCT
 	autoEnble: BOOL;
 	jobEnble: BOOL;
 	test: REAL;
+	rateLimit: LREAL := 0.1;
+	bInit: BOOL;
+	positionSetPointAuto: REAL:= 70.0;
+	moveCmd: BOOL;
+	
 END_STRUCT
 END_TYPE
 ]]></Declaration>
