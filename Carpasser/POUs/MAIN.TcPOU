@@ -3,11 +3,9 @@
   <POU Name="MAIN" Id="{e5513770-3ab6-4148-86ae-d552e1b729d5}" SpecialFunc="None">
     <Declaration><![CDATA[PROGRAM MAIN
 VAR	
-		nCounter : DINT;
-		
+		nCounter : DINT;		
 		{attribute 'OPC.UA.DA' := '1'}
-   		myOPCTag1 : INT;
-		
+   		myOPCTag1 : INT;		
 		{attribute 'OPC.UA.DA' := '1'}  	
     	myOPCTag2 : BOOL; 
 		nTimer1	: TON;  
@@ -25,25 +23,23 @@ VAR
 		scanONS: R_TRIG;
 		ONS: ARRAY[1..10] OF R_TRIG;
 		valvePosRL: REAL;
-		{attribute 'OPC.UA.DA' := '1'}
-		cars: ARRAY[1..10] OF CAR;
 		
-{attribute 'OPC.UA.DA' := '1'}
+		{attribute 'OPC.UA.DA' := '1'}
+		cars: ARRAY[1..10] OF CAR;		
+		
+		{attribute 'OPC.UA.DA' := '1'}
 		initCar: BOOL :=FALSE;
 		{attribute 'OPC.UA.DA' := '1'}
 		valve: VALVE;
 		{attribute 'OPC.UA.DA' := '1'}
 		track: TRACK;
-		arrRedPositions  : ARRAY[0..3] OF REAL := [0, track.red_left, track.red_right, track.red_middle];
-    	arrBluePositions : ARRAY[0..3] OF REAL := [0, track.blue_left, track.blue_right, track.blue_middle];
+
 		//velPID : FB_CTRL_PI_PID;
 	
-	
+	//carmove : CARMOVE;
 	
 	{attribute 'OPC.UA.DA' := '1'}
-	manOverride : BOOL;
-	
-	
+	manOverride : BOOL;	
 	{attribute 'OPC.UA.DA' := '1'}
 	carSeq: INT;
 	
@@ -60,11 +56,10 @@ VAR
 	red_left: INT;
 	blue_middle: INT;
 	trackredSelect: BOOL;
-	test: REAL;
+	test: BOOL;
 	
-	fbCTRL: FB_CTL;
-	{attribute 'OPC.UA.DA' := '1'}	
-	velPID: PID_CTL;
+	
+
 
 	(*
 	velPID : FB_CTRL_PID;
@@ -80,6 +75,19 @@ VAR
 	end: REAL;
 	{attribute 'OPC.UA.DA' := '1'}
 	moveCMDdelay: BOOL;
+	
+	arrRedPositions  : ARRAY[0..3] OF REAL := [0, track.red_left, track.red_right, track.red_middle];
+    arrBluePositions : ARRAY[0..3] OF REAL := [0, track.blue_left, track.blue_right, track.blue_middle];
+
+
+	
+	
+	arr: REAL;
+	sledInPlace: INT;
+	i: SINT;
+	test2: INT;
+	sledOffset: REAL;
+	inchTimer: TON;
 END_VAR
 	
 
@@ -91,6 +99,8 @@ END_VAR]]></Declaration>
       <ST><![CDATA[
 startTimer := TRUE;
 nTimer1(IN := startTimer, PT := T#250MS);
+
+
 
 IF nTimer1.Q THEN
 	oneSecond:= NOT oneSecond;
@@ -130,6 +140,12 @@ ELSE
 	valve.targetPos := carSim.car.pos;
 END_IF
 
+// Define Which Sled is Lined Up to Which Track
+IF ABS(valve.targetPos-carsim.car.pos) < 0.05 THEN
+	okToMove:=TRUE;	
+END_IF
+
+
 
 
 CASE carSeq OF
@@ -142,18 +158,28 @@ CASE carSeq OF
 		END_IF
 	
 	1: // Full Speed Untill 2.5 ft to approach
-		IF valve.distanceToTarget >=3.5 THEN
+		IF valve.distanceToTarget > 4 THEN
 			valvePos := valve.positionSetPointAuto;
 		
-		ELSIF	valve.distanceToTarget<=3.5 THEN 
-			valvePos := 10;
-			carSeq := 2;
+		ELSIF	valve.distanceToTarget<=4 THEN 
+			valvePos := 30;
+			
+			
+			inchTimer(IN := valve.distanceToTarget <0.04, PT := T#3S);
+			IF inchTimer.Q THEN			
+			carSeq := 2; 
+			END_IF
 		END_IF
 	2: // Inch Mode
-		IF valve.distanceToTarget < 0.05 THEN
+		IF valve.distanceToTarget < 0.02 THEN
 			carSeq := 0;
 			valvePos :=0;
 			valve.moveCmd:=0;
+			
+			
+			
+			
+			IF valve.distanceToTarget >0.5 THEN carSeq := 1; END_IF
 		END_IF
 	
 	ELSE
@@ -175,9 +201,6 @@ END_IF
 IF  scanONS.Q THEN	
 	
 	//fbCTRL(pv:=carSIM.car.vel, setPoint:=velSPrateLimit, enable:=TRUE);
-	
-	
-
 	//rate_limit(targetVal:=valve.velSetpoint, currentVal:= velSPrateLimit, cycleTime:=simTime, rateLimit := valve.rateLimit);
 	//velSPrateLimit := rate_limit.nextVal;
 
@@ -187,6 +210,7 @@ IF  scanONS.Q THEN
 	
 	ONS[4](CLK := (valveOut = valve.positionSetPointAuto));
 	ONS[5](CLK := (valveOut = 0));
+	
 	IF ONS[4].Q THEN
 		cntEnbl := TRUE;
 		start := carsim.car.pos;
@@ -197,16 +221,9 @@ IF  scanONS.Q THEN
 		end := carsim.car.pos;
 	END_IF
 	
-	IF cntEnbl THEN
-		cnt := cnt + 1;
-	END_IF
 
-	(*
-	velPID.pv := ABS(carSim.car.vel);
-	velPID.setpoint := velSPrateLimit;	
-	velPID.enable := valve.autoEnble;
-	*)
-	
+
+	//Move Direction
 	IF valve.movRight THEN
 		valveOut := velSPrateLimit;//fbCTRL.output;
 	ELSE
@@ -218,16 +235,17 @@ IF  scanONS.Q THEN
 	//Calc Dist To Target
 	valve.distanceToTarget := ABS(carSim.car.pos - valve.targetPos);
 	
-	IF (carSim.car.pos - valve.targetPos) > 0 THEN
+	IF (carSim.car.pos - valve.targetPos) > 0  THEN
 
 		valve.movRight := 0;
 		valve.movLeft := 1;
 
-	ELSIF (carSim.car.pos - valve.targetPos) < 0 THEN
+	ELSIF (carSim.car.pos - valve.targetPos) < 0  THEN
 		valve.movLeft := 0;
 		valve.movRight := 1; 
 		
 	ELSE
+		// OUT OF BOUNDS
 		IF carSIM.car.pos <0.5 THEN
 			valve.movLeft := 0;
 			valve.movRight := 1;
@@ -235,9 +253,49 @@ IF  scanONS.Q THEN
 			valve.movLeft := 1;
 			valve.movRight := 0;
 			
-		END_IF
+		END_IF 
 	
 	END_IF
+	
+	
+	
+	
+	//WINCH Move FWD REV
+	IF okTOMove THEN
+		IF track.redFWD THEN
+			track.redPy := track.redPy + 4.5;
+			track.redREV := FALSE;
+			IF track.redPy >= track.maxPy THEN
+				track.redFWD:=FALSE;
+			END_IF
+		END_IF
+		IF track.blueFWD THEN
+			track.bluePy := track.bluePy + 4.5;
+			track.blueREV := FALSE;
+			IF track.bluePy >= track.maxPy THEN
+				track.blueFWD:=FALSE;
+			END_IF
+		END_IF
+		
+		IF track.redREV THEN
+			track.redPy := track.redPy - 4.5;
+			track.redFWD := FALSE;
+			IF track.redPy <= track.minPy THEN
+				track.redREV:=FALSE;
+			END_IF
+		END_IF
+		IF track.blueREV THEN
+			track.bluePy := track.bluePy - 4.5;
+			track.blueFWD := FALSE;
+			IF track.bluePy <=track.minPY THEN
+				track.blueREV:=FALSE;
+			END_IF
+		END_IF
+	END_IF
+		
+
+	main.carmove();
+	
 	
 	
 	carSim(valvePosition := valveOut, carWt := 10000, init := initCar);
@@ -251,5 +309,142 @@ END_IF
 
 ]]></ST>
     </Implementation>
+    <Action Name="CARMOVE" Id="{df0d2f58-abb7-4b71-8255-0d9baec20eaa}">
+      <Implementation>
+        <ST><![CDATA[
+
+
+//pY - alignedwith sled: 360
+
+(*
+Ignition: 
+track 1 - 250 pxls
+track 2 - 600
+track 3 - 951
+
+TYPE CAR :
+
+	pX : REAL;
+	pY : REAL;
+	currentTrack : SINT:=1;
+	//queueNum : DINT;
+	carID : SINT;
+	present: BOOL;
+	percentFull: REAL;
+	positionID: INT;
+	fwdCMD: BOOL;
+	revCMD: BOOL;
+	initCar: BOOL;
+	isAttached: BOOL;
+	isOnBOardRed: BOOL;
+	isOnBoardBlue: BOOL;
+
+TYPE TRACK:
+	//Mainly for WInch control and boxcar sim
+
+	red_left: REAL := 0.426085;
+	red_right: REAL:= 35.377296;
+	red_middle: REAL:= 17.887;
+	blue_left: REAL:= 7.244;
+	blue_right: REAL:= 42.17;
+	blue_middle: REAL:=24.681;
+	sel_val: SINT := 0;
+	target: REAL;
+	redSelect: BOOL;
+	blueSelect:BOOL;
+	leftSelect:BOOL;
+	rightSelect: BOOL;
+	redFWD: BOOL;
+	redREV: BOOL;
+	blueFWD: BOOL;
+	blueREV: BOOL;
+	redPx: REAL;
+	redPy: REAL;
+	bluePx: REAL; //move with car in ignition
+	bluePy: REAL; // winch position extend retract
+	redREVok: BOOL;
+	blueREVok: BOOL; // ok to move car onto sled
+	redAttached: BOOL;
+	blueAttached: BOOL;
+	maxPy: REAL := 338; //max extend of winch
+	minPY: REAL := 21;
+	blueExtended : BOOL;
+	redExtended : BOOL;
+*)
+
+FOR i := 1 TO 5 BY 1 DO
+	
+
+	IF i = 3 THEN test := TRUE; END_IF
+	IF cars[i].initCar THEN
+		
+		cars[i].pX := 24.67;
+		cars[i].pY := 360;
+		cars[i].initCar := 0;
+		
+	END_IF
+	
+	IF track.bluePy >= 338 THEN track.blueExtended := TRUE; END_IF
+	IF track.redPy >= 338 THEN track.redExtended := TRUE; END_IF
+	
+	
+	//ATTACH LOGIC 
+	IF ABS(valve.targetPos - carSim.car.pos) < 0.1 THEN
+		
+		IF track.blueSelect AND TRACK.blueExtended AND track.cmdAttachBlue THEN
+			track.blueAttached := TRUE;
+			cars[i].isAttached := TRUE;
+			track.cmdAttachBlue := FALSE;		
+		END_IF
+	
+		IF track.redSelect AND TRACK.redExtended AND track.cmdAttachRed THEN
+			track.redAttached := TRUE;
+			cars[i].isAttached := TRUE;
+			track.cmdAttachRed := FALSE;		
+		END_IF
+	
+	END_IF
+	
+	
+	//DETACH LOGIC
+	IF ABS(valve.targetPos - carSim.car.pos) < 0.1 THEN
+		
+		IF track.blueSelect AND TRACK.blueExtended AND track.cmdDetachBlue THEN
+			track.blueAttached := FALSE;
+			cars[i].isAttached := FALSE;
+			track.cmdDetachBlue := FALSE;		
+		END_IF
+	
+		IF track.redSelect AND TRACK.redExtended AND track.cmdDetachRed THEN
+			track.redAttached := FALSE;
+			cars[i].isAttached := FALSE;
+			track.cmdDetachRed := FALSE;		
+		END_IF
+	
+	END_IF
+	
+	
+	//MOVE CAR WITH SLED
+	IF track.blueAttached AND cars[i].isAttached THEN 
+		cars[i].pY := track.bluePy; 
+		cars[i].pX := carsim.car.pos;//track.bluePx;
+	END_IF
+	
+	IF track.redAttached AND cars[i].isAttached THEN 
+		cars[i].pY := track.redPy; 
+		cars[i].pX := carsim.car.pos+sledOffset;//track.redPx;
+	END_IF
+
+END_FOR
+
+
+
+test2 := test2+1;
+
+
+
+]]></ST>
+      </Implementation>
+    </Action>
   </POU>
 </TcPlcObject>

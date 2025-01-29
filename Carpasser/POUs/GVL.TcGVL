@@ -21,34 +21,16 @@ VAR_GLOBAL
 	simTime: TIME:= T#50MS;
 	{attribute 'OPC.UA.DA' := '1'}
 	simEnbl: BOOL;
-	fInToScope						: LREAL;
-	fSetpointValueToScope			: LREAL;
-	fActualValueToScope				: LREAL;
-	fActualValueInnerLoopToScope 	: LREAL;
-	fActualValueOuterLoopToScope	: LREAL;
 
-	fOutToScope						: LREAL;
-	bOutToScope						: BOOL;
-	bPosOutToScope					: BOOL;
-	bNegOutToScope					: BOOL;
+	okToMove: BOOL;
 
-	eParameterRecordToScope			: INT;
-	fOutHeatingToScope				: LREAL;
-	fOutCoolingToScope				: LREAL;
 
-	fValveSimulationToScope			: LREAL;
 
-	bInBandToScope					: BOOL;
-	bNotInBandToScope				: BOOL;
-
-	fPWMInToScope					: LREAL;
-	bPWMPosOutToScope				: BOOL;
-	bPWMNegOutToScope				: BOOL;
-
-	bPWMPosOut1ToScope 				: BOOL;
-	bPWMPosOut2ToScope				: BOOL;
-	bPWMPosOut3ToScope				: BOOL;
+	carPos: REAL;
 	
+	
+	blueSelect: BOOL;
+	redSelect: BOOL;
 END_VAR;]]></Declaration>
   </GVL>
 </TcPlcObject>

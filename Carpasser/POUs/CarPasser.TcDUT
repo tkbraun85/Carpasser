@@ -2,12 +2,12 @@
 <TcPlcObject Version="1.1.0.1">
   <DUT Name="CarPasser" Id="{6045296b-446e-4dd7-94e8-ddecf1cf2368}">
     <Declaration><![CDATA[TYPE CarPasser : STRUCT
-    vel            : REAL := 0;
-    acc            : REAL := 0;
+    vel            : LREAL := 0;
+    acc            : LREAL := 0;
     pos            : REAL := 0;
     accelLoad      : REAL := 0;
-    velPrev        : REAL := 0;
-    accPrev        : REAL := 0;
+    velPrev        : LREAL := 0;
+    accPrev        : LREAL := 0;
     posPrev        : REAL := 0;
 	accelLoadPrev  : REAL :=0;
     carWeight      : REAL := 0;
@@ -15,6 +15,7 @@
     valveFlowEst   : REAL := 0;
 	state : DINT := 0;
 	power : REAL := 0;
+
 	
 END_STRUCT
 END_TYPE]]></Declaration>

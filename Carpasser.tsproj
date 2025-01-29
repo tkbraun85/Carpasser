@@ -20,7 +20,7 @@
 		</System>
 		<Plc>
 			<Project GUID="{9F3C0C46-CC9F-4ED9-85B7-9DA197A5F1E9}" Name="Carpasser" PrjFilePath="Carpasser\Carpasser.plcproj" TmcFilePath="Carpasser\Carpasser.tmc" ReloadTmc="true" AmsPort="851" FileArchiveSettings="#x000e" CopyTmcToTarget="true" CopyTpyToTarget="false" SymbolicMapping="true">
-				<Instance Id="#x08502000" TcSmClass="TComPlcObjDef" KeepUnrestoredLinks="2" TmcHash="{EBDE75B7-C09D-9257-B196-5B2E367EB5A2}" TmcPath="Carpasser\Carpasser.tmc">
+				<Instance Id="#x08502000" TcSmClass="TComPlcObjDef" KeepUnrestoredLinks="2" TmcHash="{09B13795-0308-C76F-7EE8-FEF20E8AB347}" TmcPath="Carpasser\Carpasser.tmc">
 					<Name>Carpasser Instance</Name>
 					<CLSID ClassFactory="TcPlc30">{08500001-0000-0000-F000-000000000064}</CLSID>
 					<Contexts>

@@ -1,0 +1,22 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1">
+  <DUT Name="SLED" Id="{f4d30ebc-92cb-48ac-b866-bff44713a340}">
+    <Declaration><![CDATA[TYPE SLED :
+STRUCT
+	sledID: BOOL;
+	redPx: REAL;
+	redPy: REAL;
+	bluePx: REAL; //move with car in ignition
+	bluePy: REAL; // winch position extend retract
+	redREVok: BOOL;
+	blueREVok: BOOL; // ok to move car onto sled
+	redAttached: BOOL;
+	blueAttached: BOOL;
+	maxPy: REAL := 338; //max extend of winch
+	minPY: REAL := 21;
+
+END_STRUCT
+END_TYPE
+]]></Declaration>
+  </DUT>
+</TcPlcObject>

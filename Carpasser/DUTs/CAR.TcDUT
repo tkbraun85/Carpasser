@@ -5,13 +5,20 @@
 STRUCT
 	pX : REAL;
 	pY : REAL;
-	currentTrack : SINT;
-	queueNum : DINT;
-	carNum : SINT;
+	currentTrack : SINT:=1;
+	//queueNum : DINT;
+	carID : SINT;
 	present: BOOL;
 	percentFull: REAL;
 	positionID: INT;
-	
+	fwdCMD: BOOL;
+	revCMD: BOOL;
+	initCar: BOOL;
+	isAttached: BOOL;
+	isOnBOardRed: BOOL;
+	isOnBoardBlue: BOOL;
+	cmdAttach: BOOL;
+	cmdDetach: BOOL;
 	
 END_STRUCT
 END_TYPE
