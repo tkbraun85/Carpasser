@@ -44,6 +44,9 @@
     <Compile Include="POUs\CarPasser.TcDUT">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="POUs\fRateLimit.TcPOU">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Include="POUs\GVL.TcGVL">
       <SubType>Code</SubType>
       <LinkAlways>true</LinkAlways>
