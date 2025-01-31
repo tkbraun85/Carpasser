@@ -88,6 +88,7 @@ VAR
 	test2: INT;
 	sledOffset: REAL;
 	inchTimer: TON;
+	x: REAL;
 END_VAR
 	
 
@@ -97,6 +98,7 @@ VAR_INPUT
 END_VAR]]></Declaration>
     <Implementation>
       <ST><![CDATA[
+
 startTimer := TRUE;
 nTimer1(IN := startTimer, PT := T#250MS);
 
@@ -112,8 +114,6 @@ END_IF
 
 scanTimer(IN := simEnbl, PT := simTime);
 scanONS(CLK := scanTimer.Q);
-
-//valvePos := 0; //100*SIN(fAngleDeg*(3.14159/180));
 
 
 (* SELECT CAR POSITIONS 0-NONE,1-RL, 2-RR,3-RM,4-BL, 5-BR, 6-BM *)
@@ -162,10 +162,9 @@ CASE carSeq OF
 			valvePos := valve.positionSetPointAuto;
 		
 		ELSIF	valve.distanceToTarget<=4 THEN 
-			valvePos := 30;
-			
-			
+			valvePos := 30;			
 			inchTimer(IN := valve.distanceToTarget <0.04, PT := T#3S);
+			
 			IF inchTimer.Q THEN			
 			carSeq := 2; 
 			END_IF
@@ -174,14 +173,12 @@ CASE carSeq OF
 		IF valve.distanceToTarget < 0.02 THEN
 			carSeq := 0;
 			valvePos :=0;
-			valve.moveCmd:=0;
+			valve.moveCmd:=0;			
 			
-			
-			
-			
-			IF valve.distanceToTarget >0.5 THEN carSeq := 1; END_IF
-		END_IF
-	
+			IF valve.distanceToTarget >0.5 THEN 
+			carSeq := 1; 
+			END_IF
+		END_IF	
 	ELSE
 		valvePos:=0;
 	
@@ -191,10 +188,6 @@ nTimer3(IN := (valve.moveCmd = 0), PT := T#20S);
 IF nTimer3.Q THEN
 	moveCMDdelay := 0;
 END_IF
-
-
-
-
 
 
 //Main Simulation and Control Loop
@@ -371,16 +364,18 @@ TYPE TRACK:
 	blueExtended : BOOL;
 	redExtended : BOOL;
 *)
+x := cars[1].pX;
 
 FOR i := 1 TO 5 BY 1 DO
 	
 
-	IF i = 3 THEN test := TRUE; END_IF
+	i:=1;
 	IF cars[i].initCar THEN
 		
 		cars[i].pX := 24.67;
-		cars[i].pY := 360;
+		cars[i].pY := 364;
 		cars[i].initCar := 0;
+		cars[i].vis := TRUE;
 		
 	END_IF
 	
@@ -391,13 +386,13 @@ FOR i := 1 TO 5 BY 1 DO
 	//ATTACH LOGIC 
 	IF ABS(valve.targetPos - carSim.car.pos) < 0.1 THEN
 		
-		IF track.blueSelect AND TRACK.blueExtended AND track.cmdAttachBlue THEN
+		IF track.blueSelect AND TRACK.blueExtended AND track.cmdAttachBlue AND ABS(cars[i].pX- carsim.car.pos)<0.1 THEN
 			track.blueAttached := TRUE;
 			cars[i].isAttached := TRUE;
 			track.cmdAttachBlue := FALSE;		
 		END_IF
 	
-		IF track.redSelect AND TRACK.redExtended AND track.cmdAttachRed THEN
+		IF track.redSelect AND TRACK.redExtended AND track.cmdAttachRed  AND ABS(cars[i].pX-carsim.car.pos+sledOffset)<0.1 THEN
 			track.redAttached := TRUE;
 			cars[i].isAttached := TRUE;
 			track.cmdAttachRed := FALSE;		
@@ -409,13 +404,13 @@ FOR i := 1 TO 5 BY 1 DO
 	//DETACH LOGIC
 	IF ABS(valve.targetPos - carSim.car.pos) < 0.1 THEN
 		
-		IF track.blueSelect AND TRACK.blueExtended AND track.cmdDetachBlue THEN
+		IF track.blueSelect AND TRACK.blueExtended AND track.cmdDetachBlue AND ABS(cars[i].pX- carsim.car.pos)<0.1 THEN
 			track.blueAttached := FALSE;
 			cars[i].isAttached := FALSE;
 			track.cmdDetachBlue := FALSE;		
 		END_IF
 	
-		IF track.redSelect AND TRACK.redExtended AND track.cmdDetachRed THEN
+		IF track.redSelect AND TRACK.redExtended AND track.cmdDetachRed AND ABS(cars[i].pX-carsim.car.pos+sledOffset)<0.1 THEN
 			track.redAttached := FALSE;
 			cars[i].isAttached := FALSE;
 			track.cmdDetachRed := FALSE;		
@@ -432,7 +427,7 @@ FOR i := 1 TO 5 BY 1 DO
 	
 	IF track.redAttached AND cars[i].isAttached THEN 
 		cars[i].pY := track.redPy; 
-		cars[i].pX := carsim.car.pos+sledOffset;//track.redPx;
+		cars[i].pX := carsim.car.pos+sledOffset;//track.redPx; 6.75
 	END_IF
 
 END_FOR

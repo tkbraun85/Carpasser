@@ -3,12 +3,48 @@
   <POU Name="fRateLimit" Id="{ee22e1bc-9072-4895-a5c2-7f8ebd098940}" SpecialFunc="None">
     <Declaration><![CDATA[FUNCTION fRateLimit : LREAL
 VAR_INPUT
+	IN : LREAL;
+	LIMITED : LREAL;
+	SCANTIME : LREAL;
+	TARGET_VAL : LREAL;
+END_VAR
+
+VAR_OUTPUT
+	OUT : LREAL;
 END_VAR
 VAR
+	timeSlice: REAL;
+	END: INT;
 END_VAR
 ]]></Declaration>
     <Implementation>
-      <ST><![CDATA[]]></ST>
+      <ST><![CDATA[
+
+
+(*
+splitSecond := TO_REAL(T#1S) / TO_REAL(cycleTime);
+pct := (rateLimit/100.0)/splitSecond;
+
+IF ABS(targetVal - currentVal) < 1 THEN
+	nextVal :=targetVal;
+
+ELSE
+
+	IF targetVal > currentVal THEN
+		
+		nextVal := MIN(currentVal+pct, currentVal + 0.1*(targetVal - currentVal));
+	END_IF
+	
+	IF targetVal < currentVal THEN
+		nextVal := MAX(currentVal-pct, currentVal - ABS(0.1*(targetVal-currentVal)));
+	END_IF
+
+END_IF
+*)
+
+timeSlice := LIMITED/SCANTIME;
+LIMITED := MIN(IN+timeSLice, TARGET_VAL);
+]]></ST>
     </Implementation>
   </POU>
 </TcPlcObject>

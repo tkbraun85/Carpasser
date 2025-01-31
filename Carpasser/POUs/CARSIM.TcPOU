@@ -63,7 +63,7 @@ car.vel :=  0.0084*car.valveFlowEst;
 
 
 car.acc := MIN(2.5,ABS(car.vel - car.velPrev)/0.050);
-car.pos := car.posPrev + car.vel*0.05; 
+car.pos := car.posPrev + car.vel*0.050; 
 car.accelLoad := carRollResist*car.carWeight/2000 + car.carWeight/32.2*car.acc;
 car.power := car.accelLoad*60/33000;	
 

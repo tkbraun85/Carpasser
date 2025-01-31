@@ -19,9 +19,8 @@ STRUCT
 	isOnBoardBlue: BOOL;
 	cmdAttach: BOOL;
 	cmdDetach: BOOL;
-	
+	vis: BOOL;
 END_STRUCT
-END_TYPE
-]]></Declaration>
+END_TYPE]]></Declaration>
   </DUT>
 </TcPlcObject>
