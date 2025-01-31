@@ -88,6 +88,9 @@ VAR
 	test2: INT;
 	sledOffset: REAL;
 	inchTimer: TON;
+	cpInit: BOOL;
+	junkINT: INT;
+	onsVis: R_TRIG;
 END_VAR
 	
 
@@ -158,11 +161,11 @@ CASE carSeq OF
 		END_IF
 	
 	1: // Full Speed Untill 2.5 ft to approach
-		IF valve.distanceToTarget > 4 THEN
+		IF valve.distanceToTarget > 2 THEN
 			valvePos := valve.positionSetPointAuto;
 		
-		ELSIF	valve.distanceToTarget<=4 THEN 
-			valvePos := 30;
+		ELSIF	valve.distanceToTarget<=2 THEN 
+			valvePos := 25;
 			
 			
 			inchTimer(IN := valve.distanceToTarget <0.04, PT := T#3S);
@@ -298,7 +301,10 @@ IF  scanONS.Q THEN
 	
 	
 	
-	carSim(valvePosition := valveOut, carWt := 10000, init := initCar);
+	carSim(valvePosition := valveOut, carWt := 10000, initialize := initCar);
+	IF initCar THEN
+		initCar := FALSE;
+	END_IF
 	carState := carSIm.car;
 	scanTimer(IN:= FALSE);
 	//initCar := FALSE;
@@ -342,12 +348,7 @@ TYPE CAR :
 TYPE TRACK:
 	//Mainly for WInch control and boxcar sim
 
-	red_left: REAL := 0.426085;
-	red_right: REAL:= 35.377296;
-	red_middle: REAL:= 17.887;
-	blue_left: REAL:= 7.244;
-	blue_right: REAL:= 42.17;
-	blue_middle: REAL:=24.681;
+
 	sel_val: SINT := 0;
 	target: REAL;
 	redSelect: BOOL;
@@ -370,20 +371,156 @@ TYPE TRACK:
 	minPY: REAL := 21;
 	blueExtended : BOOL;
 	redExtended : BOOL;
+	
+	
+	
+	carPos
+	1. red left
+	2. blue left
+	3. red mid
+	4. blue mid
+	5. red right
+	6. blue right
+	
+	trackPos:
+	1 left 
+	2 mid 
+	3 right
+	
+	red_left: REAL := 0.426085;
+	red_right: REAL:= 35.377296;
+	red_middle: REAL:= 17.887;
+	blue_left: REAL:= 7.244;
+	blue_right: REAL:= 42.17;
+	blue_middle: REAL:=24.681;
 *)
 
-FOR i := 1 TO 5 BY 1 DO
+
+IF THRHOLD(carSim.car.pos, 0.426085) THEN track.posID := 1; END_IF
+IF THRHOLD(carSim.car.pos, 7.244 ) THEN track.posID := 2; END_IF
+IF THRHOLD(carSim.car.pos, 17.887) THEN track.posID := 3; END_IF
+IF THRHOLD(carSim.car.pos, 24.681) THEN track.posID := 4; END_IF
+IF THRHOLD(carSim.car.pos, 35.377296) THEN track.posID := 5; END_IF
+IF THRHOLD(carSim.car.pos, 42.17) THEN track.posID := 6; END_IF
+
+
+
+
+FOR i := 1 TO 5 DO
 	
 
-	IF i = 3 THEN test := TRUE; END_IF
+	//IF i = 1 THEN WHY NOT WORK??
+	//Initialize CMD
 	IF cars[i].initCar THEN
 		
 		cars[i].pX := 24.67;
 		cars[i].pY := 360;
 		cars[i].initCar := 0;
+		cars[i].visible := TRUE;
+		cars[i].isAttachedBlue:= FALSE;
+		cars[i].isAttachedRed := FALSE;
+		cars[i].canAttachBlue:= FALSE;
+		cars[i].canAttachRed := FALSE;
+	END_IF
+	
+	//Move to (0,0) if onshot to zerro
+	cars[i].ons(CLK := (cars[i].visible = FALSE));
+	
+	IF cars[i].ons.q THEN
+		cars[i].pX:=0;
+		cars[i].pY:=0;
 		
 	END_IF
 	
+	//evaluate car positions	
+	IF THRHOLD(cars[i].pX, 24.681) THEN
+	cars[i].currentTrack := 2;
+		
+	ELSIF THRHOLD(cars[i].pX, 7.244) THEN
+		cars[i].currentTrack := 1;
+		
+	ELSIF THRHOLD(cars[i].pX, 42.17) THEN
+		cars[i].currentTrack := 3;	
+	ELSE
+		cars[i].currentTrack := 0; //undefinedd track - make invisible	
+	END_IF
+
+
+
+	CASE track.posID OF
+		1: //sled is at red left
+			IF cars[i].currentTrack = 1 AND track.redExtended AND NOT track.redAttached THEN
+				cars[i].canAttachRed := TRUE;
+				IF track.cmdAttachRED THEN
+					track.redAttached := TRUE;
+					cars[i].isAttachedRed := TRUE;
+					track.cmdAttachRed := 0;
+					RETURN;
+				END_IF
+			END_IF
+			
+		
+		2: //BLUE LEFT
+			IF cars[i].currentTrack = 1 AND track.blueExtended AND NOT track.blueAttached THEN
+				cars[i].canAttachblue := TRUE;
+				IF track.cmdAttachblue THEN
+					track.blueAttached := TRUE;
+					cars[i].isAttachedBlue := TRUE;
+					track.cmdAttachblue := 0;
+					RETURN;
+				END_IF
+			END_IF
+		
+		
+		3: //RED CENTER
+			IF cars[i].currentTrack = 2 AND track.redExtended AND NOT track.redAttached THEN
+				cars[i].canAttachred := TRUE;
+				IF track.cmdAttachred THEN
+					track.redAttached := TRUE;
+					cars[i].isAttachedRed := TRUE;
+					track.cmdAttachred := 0;
+					RETURN;
+				END_IF
+			END_IF
+		4:	//BLUE CENTER
+			IF cars[i].currentTrack = 2 AND track.blueExtended AND NOT track.blueAttached THEN
+				cars[i].canAttachblue := TRUE;
+				IF track.cmdAttachblue THEN
+					track.blueAttached := TRUE;
+					cars[i].isAttachedBlue := TRUE;
+					track.cmdAttachBlue := 0;
+					RETURN;
+				END_IF
+			END_IF
+		5: // RED RIGHT
+			IF cars[i].currentTrack = 3 AND track.redExtended AND NOT track.redAttached THEN
+				cars[i].canAttachred := TRUE;
+				IF track.cmdAttachred THEN
+					track.redAttached := TRUE;
+					cars[i].isAttachedRed := TRUE;
+					track.cmdAttachred := 0;
+					RETURN;
+				END_IF
+			END_IF
+			
+		6:// BLUE RIGHT
+			IF cars[i].currentTrack = 3 AND track.blueExtended AND NOT track.blueAttached THEN
+				cars[i].canAttachblue := TRUE;
+				IF track.cmdAttachblue THEN
+					track.blueAttached := TRUE;
+					cars[i].isAttachedBlue := TRUE;
+					track.cmdAttachblue := 0;
+					RETURN;
+				END_IF
+			END_IF
+	END_CASE
+	
+
+
+
+
+	(*
+	TRASH
 	IF track.bluePy >= 338 THEN track.blueExtended := TRUE; END_IF
 	IF track.redPy >= 338 THEN track.redExtended := TRUE; END_IF
 	
@@ -404,20 +541,20 @@ FOR i := 1 TO 5 BY 1 DO
 		END_IF
 	
 	END_IF
-	
+	*)
 	
 	//DETACH LOGIC
 	IF ABS(valve.targetPos - carSim.car.pos) < 0.1 THEN
 		
 		IF track.blueSelect AND TRACK.blueExtended AND track.cmdDetachBlue THEN
 			track.blueAttached := FALSE;
-			cars[i].isAttached := FALSE;
+			cars[i].isAttachedBlue := FALSE;
 			track.cmdDetachBlue := FALSE;		
 		END_IF
 	
 		IF track.redSelect AND TRACK.redExtended AND track.cmdDetachRed THEN
 			track.redAttached := FALSE;
-			cars[i].isAttached := FALSE;
+			cars[i].isAttachedRed := FALSE;
 			track.cmdDetachRed := FALSE;		
 		END_IF
 	
@@ -425,13 +562,13 @@ FOR i := 1 TO 5 BY 1 DO
 	
 	
 	//MOVE CAR WITH SLED
-	IF track.blueAttached AND cars[i].isAttached THEN 
-		cars[i].pY := track.bluePy; 
+	IF track.blueAttached AND cars[i].isAttachedBlue THEN 
+		cars[i].pY := track.bluePy+20; 
 		cars[i].pX := carsim.car.pos;//track.bluePx;
 	END_IF
 	
-	IF track.redAttached AND cars[i].isAttached THEN 
-		cars[i].pY := track.redPy; 
+	IF track.redAttached AND cars[i].isAttachedRed THEN 
+		cars[i].pY := track.redPy + 20; 
 		cars[i].pX := carsim.car.pos+sledOffset;//track.redPx;
 	END_IF
 
@@ -439,7 +576,6 @@ END_FOR
 
 
 
-test2 := test2+1;
 
 
 

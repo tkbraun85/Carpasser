@@ -5,7 +5,7 @@
 STRUCT
 	pX : REAL;
 	pY : REAL;
-	currentTrack : SINT:=1;
+	currentTrack :SINT;
 	//queueNum : DINT;
 	carID : SINT;
 	present: BOOL;
@@ -14,11 +14,17 @@ STRUCT
 	fwdCMD: BOOL;
 	revCMD: BOOL;
 	initCar: BOOL;
-	isAttached: BOOL;
+	isAttachedBlue: BOOL;
 	isOnBOardRed: BOOL;
 	isOnBoardBlue: BOOL;
 	cmdAttach: BOOL;
 	cmdDetach: BOOL;
+	canAttachBlue: BOOL;
+	canAttachRed: BOOL;
+	visible: BOOL;
+	isAttachedRed: BOOL;
+	trackInitialPosID: INT;
+	ons: R_TRIG;
 	
 END_STRUCT
 END_TYPE

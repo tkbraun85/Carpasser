@@ -6,7 +6,7 @@ VAR_INPUT
 	targetVal: REAL;
 	currentVal: REAL;
 	cycleTime: TIME;
-	rateLimit: REAL :=5;
+	rateLimit: REAL;
 END_VAR
 VAR_OUTPUT
 	nextVal: REAL;
@@ -22,7 +22,7 @@ END_VAR
 
 
 splitSecond := TO_REAL(T#1S) / TO_REAL(cycleTime);
-pct := (rateLimit/100.0)/splitSecond;
+pct := (rateLimit/100.0)/0.05;
 
 IF ABS(targetVal - currentVal) < 1 THEN
 	nextVal :=targetVal;

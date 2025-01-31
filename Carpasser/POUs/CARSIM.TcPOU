@@ -7,11 +7,12 @@ VAR_INPUT
 	//init : BOOL := FALSE;
 	carWt: REAL := 1000;
 
-	scanTime: REAL := 0.02; //milliseconds
+	scanTime: REAL := 0.05; //milliseconds
 	carRollResist : REAL := 0.001; // lbs per ton
+	initialize : BOOL;
 END_VAR
 VAR_IN_OUT
-	init : BOOL;
+	
 	
 END_VAR
 VAR_OUTPUT
@@ -26,7 +27,7 @@ END_VAR
       <ST><![CDATA[
 
 
-IF init THEN
+IF initialize THEN
 	car.vel := 0;
 	car.acc := 0;
 	car.pos := 0;
@@ -38,7 +39,7 @@ IF init THEN
 	car.accelLoadPrev:= 0;
 	car.carWeight := carWt;
 	car.valveFlowEst := 0;
-	init:=0;
+	initialize:=FALSE;
 END_IF
 
 
@@ -60,9 +61,13 @@ END_IF
 
 car.vel :=  0.0084*car.valveFlowEst;
 
-
-
-car.acc := MIN(2.5,ABS(car.vel - car.velPrev)/0.050);
+//OK Just make it not spike
+IF ABS(car.vel - car.velPrev)/0.050 > 1.5 THEN
+	
+	car.acc := 0;
+ELSE
+	car.acc :=ABS(car.vel - car.velPrev)/0.050;
+END_IF
 car.pos := car.posPrev + car.vel*0.05; 
 car.accelLoad := carRollResist*car.carWeight/2000 + car.carWeight/32.2*car.acc;
 car.power := car.accelLoad*60/33000;	

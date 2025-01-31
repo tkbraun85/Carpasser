@@ -7,8 +7,8 @@
 			</Settings>
 			<Licenses>
 				<Target>
-					<ManualSelect>{777F1598-583B-4503-99BB-7C02E0ABD97E}</ManualSelect>
 					<ManualSelect>{BDCC0070-42D5-49AE-ABF1-1D4434813D60}</ManualSelect>
+					<ManualSelect>{777F1598-583B-4503-99BB-7C02E0ABD97E}</ManualSelect>
 					<ManualSelect>{67B4BA05-C1F2-4184-AE5F-4BAB0FFB09E1}</ManualSelect>
 				</Target>
 			</Licenses>
@@ -20,7 +20,7 @@
 		</System>
 		<Plc>
 			<Project GUID="{9F3C0C46-CC9F-4ED9-85B7-9DA197A5F1E9}" Name="Carpasser" PrjFilePath="Carpasser\Carpasser.plcproj" TmcFilePath="Carpasser\Carpasser.tmc" ReloadTmc="true" AmsPort="851" FileArchiveSettings="#x000e" CopyTmcToTarget="true" CopyTpyToTarget="false" SymbolicMapping="true">
-				<Instance Id="#x08502000" TcSmClass="TComPlcObjDef" KeepUnrestoredLinks="2" TmcHash="{3E64E08E-B156-2353-1C65-0993886147BA}" TmcPath="Carpasser\Carpasser.tmc">
+				<Instance Id="#x08502000" TcSmClass="TComPlcObjDef" KeepUnrestoredLinks="2" TmcHash="{0C74444F-7FC3-EE62-BEA0-7805D2DAEAA4}" TmcPath="Carpasser\Carpasser.tmc">
 					<Name>Carpasser Instance</Name>
 					<CLSID ClassFactory="TcPlc30">{08500001-0000-0000-F000-000000000064}</CLSID>
 					<Contexts>

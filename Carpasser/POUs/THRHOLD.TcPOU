@@ -1,0 +1,20 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1">
+  <POU Name="THRHOLD" Id="{acfced55-1709-482e-bc9e-3cb78e1b4e95}" SpecialFunc="None">
+    <Declaration><![CDATA[FUNCTION THRHOLD : BOOL
+VAR_INPUT
+	
+	A : REAL;
+	B : REAL;
+	THRESH: REAL:= 0.1;
+END_VAR
+VAR
+END_VAR
+]]></Declaration>
+    <Implementation>
+      <ST><![CDATA[
+ THRHOLD :=(ABS(A -B) < THRESH); 
+]]></ST>
+    </Implementation>
+  </POU>
+</TcPlcObject>
